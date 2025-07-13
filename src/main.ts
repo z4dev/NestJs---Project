@@ -11,7 +11,7 @@ void (async () => {
         whitelist: true,
       }),
     );
-    await app.listen(process.env.PORT ?? 3000);
+    await app.listen(process.env.PORT ?? 6000);
   } catch (error) {
     console.error('Error starting the application:', error);
     process.exit(1);

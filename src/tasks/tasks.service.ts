@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, Repository } from 'typeorm';
 import { CreateTaskDTO } from './create-task.dto';
 import { Task } from './task.entity';
 import { UUID_REGEX } from './tasks.helper';
@@ -13,17 +13,26 @@ export class TasksService {
     private readonly tasksRepository: Repository<Task>,
   ) {}
 
-  async findAll(): Promise<Task[]> {
-    const tasks = await this.tasksRepository.find();
-    return tasks;
+  async findAll(filters: FindOptionsWhere<Task>): Promise<Task[]> {
+    try {
+      const tasks = await this.tasksRepository.find({
+        where: filters,
+        relations: ['labels'],
+      });
+      return tasks;
+    } catch {
+      throw new NotFoundException('Tasks not found');
+    }
   }
 
   async findOne(taskId: string): Promise<Task | null> {
     if (!UUID_REGEX.test(taskId)) {
       throw new NotFoundException(`Task ID must be a valid UUID`);
     }
-    const task = await this.tasksRepository.findOneBy({
-      id: taskId,
+
+    const task = await this.tasksRepository.findOne({
+      where: { id: taskId },
+      relations: ['labels'],
     });
 
     if (!task) {
