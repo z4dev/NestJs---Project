@@ -10,6 +10,6 @@ export const databaseConfig = registerAs(
     username: process.env.DB_USERNAME as string,
     password: process.env.DB_PASSWORD as string,
     database: process.env.DB_DATABASE as string,
-    synchronize: Boolean(process.env.DB_SYNC),
+    synchronize: true,
   }),
 );

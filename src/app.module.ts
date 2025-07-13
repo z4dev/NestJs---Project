@@ -7,8 +7,10 @@ import { appConfig } from './config/app.config';
 import { appConfigSchema } from './config/config.type';
 import { databaseConfig } from './config/database.config';
 import { TypedConfigService } from './config/type-config.service';
+import { TaskLabel } from './tasks/task-lable.entity';
 import { Task } from './tasks/task.entity';
 import { TasksModule } from './tasks/tasks.module';
+import { User } from './users/user.entity';
 
 @Module({
   imports: [
@@ -16,7 +18,7 @@ import { TasksModule } from './tasks/tasks.module';
       load: [appConfig, databaseConfig],
       validationSchema: appConfigSchema,
       validationOptions: {
-        abortEarly: true, // Stop validation on the first error
+        abortEarly: true,
       },
     }),
 
@@ -26,7 +28,7 @@ import { TasksModule } from './tasks/tasks.module';
       useFactory: (configService: TypedConfigService) => ({
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         ...configService.get('database'),
-        entities: [Task],
+        entities: [Task, User, TaskLabel],
       }),
     }),
 

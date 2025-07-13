@@ -1,4 +1,13 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { User } from 'src/users/user.entity';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { TaskLabel } from './task-lable.entity';
+import { TaskStatus } from './tasks.helper';
 
 @Entity()
 export class Task {
@@ -22,8 +31,23 @@ export class Task {
 
   @Column({
     type: 'varchar',
-    default: 'PENDING',
+    default: TaskStatus.IN_PROGRESS,
     comment: 'Indicates whether the task is completed or not',
   })
   status: boolean;
+
+  @ManyToOne(() => User, (user) => user.tasks, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+    nullable: false,
+  })
+  user: User;
+  @Column()
+  userId: string;
+
+  @OneToMany(() => TaskLabel, (taskLabel) => taskLabel.task, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  labels: TaskLabel[];
 }

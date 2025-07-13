@@ -33,8 +33,7 @@ export class TasksService {
   }
 
   async addTask(createTaskDTO: CreateTaskDTO): Promise<Task> {
-    const newTask = this.tasksRepository.create(createTaskDTO);
-    return await this.tasksRepository.save(newTask);
+    return await this.tasksRepository.save(createTaskDTO);
   }
 
   async delete(taskId: string): Promise<void> {
