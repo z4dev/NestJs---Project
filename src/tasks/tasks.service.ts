@@ -1,6 +1,11 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOptionsWhere, Repository } from 'typeorm';
+import { PaginationParams } from 'src/common/pagination.params';
+import { Repository } from 'typeorm';
 import { CreateTaskDTO } from './create-task.dto';
 import { Task } from './task.entity';
 import { UUID_REGEX } from './tasks.helper';
@@ -13,13 +18,32 @@ export class TasksService {
     private readonly tasksRepository: Repository<Task>,
   ) {}
 
-  async findAll(filters: FindOptionsWhere<Task>): Promise<Task[]> {
+  async findAll(
+    filters: any,
+    pagination: PaginationParams,
+  ): Promise<[Task[], number]> {
     try {
-      const tasks = await this.tasksRepository.find({
-        where: filters,
-        relations: ['labels'],
-      });
-      return tasks;
+      const query = this.tasksRepository
+        .createQueryBuilder('task')
+        .leftJoinAndSelect('task.labels', 'labels');
+
+      if (filters.status) {
+        query.andWhere('task.status= :status', { status: filters.status });
+      }
+      if (filters.search?.trim()) {
+        query.andWhere(
+          'task.title ILIKE :search OR task.description ILIKE :search',
+          { search: `%${filters.search.trim()}%` },
+        );
+      }
+      query.orderBy(
+        `task.${filters.sortBy || 'createdAt'}`,
+        filters.sortOrder || 'DESC',
+      );
+      query.skip((pagination.page - 1) * pagination.limit);
+      query.take(pagination.limit);
+
+      return query.getManyAndCount();
     } catch {
       throw new NotFoundException('Tasks not found');
     }

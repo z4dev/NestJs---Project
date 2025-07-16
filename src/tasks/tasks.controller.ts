@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Body,
   Controller,
@@ -9,9 +8,11 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { PaginationParams } from 'src/common/pagination.params';
+import { PaginationResponse } from 'src/common/pagination.response';
 import { CreateTaskDTO } from './create-task.dto';
+import { FindTaskParams } from './find-task.params';
 import { Task } from './task.entity';
-import { validateQueryParams } from './tasks.helper';
 import { TasksService } from './tasks.service';
 import { UpdateTaskDto } from './update-task.dto';
 
@@ -20,17 +21,20 @@ export class TasksController {
   constructor(private readonly taskService: TasksService) {}
 
   @Get()
-  async findAll(@Query() queryObj: any): Promise<Task[]> {
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const { limit = 10, page = 1, ...filtered } = queryObj;
-      validateQueryParams(filtered);
-      console.log(filtered);
-      return await this.taskService.findAll(filtered);
-    } catch (error) {
-      console.error('Error in findAll:', error);
-      throw error; // Re-throw the error to be handled by NestJS
-    }
+  async findAll(
+    @Query() filters: FindTaskParams,
+    @Query() pagination: PaginationParams,
+  ): Promise<PaginationResponse<Task>> {
+    const [items, total] = await this.taskService.findAll(filters, pagination);
+    return {
+      data: items,
+      meta: {
+        total,
+        offset: (pagination.page - 1) * pagination.limit,
+        limit: pagination.limit,
+        page: pagination.page,
+      },
+    };
   }
   @Get('/:taskId')
   async findOne(@Param('taskId') taskId: string): Promise<Task | null> {

@@ -1,10 +1,12 @@
 import { User } from 'src/users/user.entity';
 import {
   Column,
+  CreateDateColumn,
   Entity,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { TaskLabel } from './task-lable.entity';
 import { TaskStatus } from './tasks.helper';
@@ -50,4 +52,9 @@ export class Task {
     onUpdate: 'CASCADE',
   })
   labels: TaskLabel[];
+
+  @CreateDateColumn()
+  createdAt: Date;
+  @UpdateDateColumn()
+  updatedAt: Date;
 }
