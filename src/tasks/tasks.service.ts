@@ -1,9 +1,7 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PaginationParams } from 'src/common/pagination.params';
+import { TaskQueryBuilder } from 'src/common/query-builder/task-query-builder';
 import { Repository } from 'typeorm';
 import { CreateTaskDTO } from './create-task.dto';
 import { FindTaskParams } from './find-task.params';
@@ -23,27 +21,17 @@ export class TasksService {
     pagination: PaginationParams,
   ): Promise<[Task[], number]> {
     try {
-      const query = this.tasksRepository
-        .createQueryBuilder('task')
-        .leftJoinAndSelect('task.labels', 'labels');
+      const baseQuery = this.tasksRepository.createQueryBuilder('task');
 
-      if (filters.status) {
-        query.andWhere('task.status= :status', { status: filters.status });
-      }
-      if (filters.search?.trim()) {
-        query.andWhere(
-          'task.title ILIKE :search OR task.description ILIKE :search',
-          { search: `%${filters.search.trim()}%` },
-        );
-      }
-      query.orderBy(
-        `task.${filters.sortBy || 'createdAt'}`,
-        filters.sortOrder || 'DESC',
-      );
-      query.skip((pagination.page - 1) * pagination.limit);
-      query.take(pagination.limit);
+      const result = await new TaskQueryBuilder(baseQuery)
+        .withLabels()
+        .filterByStatus(filters.status)
+        .filterBySearch(filters.search)
+        .sortBy(filters.sortBy, filters.sortOrder)
+        .paginate(pagination)
+        .execute();
 
-      return query.getManyAndCount();
+      return result;
     } catch {
       throw new NotFoundException('Tasks not found');
     }
