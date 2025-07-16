@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
@@ -7,6 +6,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { PaginationParams } from 'src/common/pagination.params';
 import { Repository } from 'typeorm';
 import { CreateTaskDTO } from './create-task.dto';
+import { FindTaskParams } from './find-task.params';
 import { Task } from './task.entity';
 import { UUID_REGEX } from './tasks.helper';
 import { UpdateTaskDto } from './update-task.dto';
@@ -19,7 +19,7 @@ export class TasksService {
   ) {}
 
   async findAll(
-    filters: any,
+    filters: FindTaskParams,
     pagination: PaginationParams,
   ): Promise<[Task[], number]> {
     try {
